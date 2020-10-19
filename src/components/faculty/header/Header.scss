@@ -1,0 +1,17 @@
+.Header_F {
+	.dropdown-menu {
+		a:hover,
+		a:focus,
+		li:hover,
+		li:active,
+		li:focus,
+		button:hover,
+		button:focus,
+		button:active {
+		  color: white;
+		  background-color: #d3e3fc;
+		  border: none;
+		  outline: none;
+		}
+	  }
+}

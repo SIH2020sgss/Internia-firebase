@@ -1,0 +1,19 @@
+.Sidebar-container {
+	// background-color: #B7202E;
+	// color: white;
+	// background-color: rgb(255, 237, 215);
+	background-color: none;
+	.nav-item {
+		transition: all 100ms;
+		background-color: none;
+		cursor: pointer;
+		&:hover {
+			transform: scale(1.04);
+			box-shadow: 0px 0px 78px -39px #eee;
+			color: black;
+			background-color: white;
+    //   background-color: rgb(179, 217, 255);
+    //   color:white;
+		}
+	}
+}

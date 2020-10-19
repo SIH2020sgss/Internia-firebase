@@ -1,0 +1,315 @@
+folder naming: 		lower-case (hyphen separated)
+file naming: 		PascalCase
+general JS files: 	camelCase
+
+preferences ==> localStorage
+
+Project structure
+public 
+src:
+	components
+		authentication
+			welcome
+			signin
+			signup
+			forgot-password
+
+		shared
+            404
+			change-password
+			password-reset
+			browse-internship
+			
+        student
+			header
+            profile
+			notifications
+			internship
+				applied
+				details
+			
+        faculty
+			header
+            profile
+			notifications
+            internship
+				create
+				floated
+				details
+			feedback
+
+        admin
+			header
+			profile
+			notifications
+
+			feedback
+				list
+				details
+
+			student
+				list
+				details
+
+			faculty
+				list
+				details
+
+			internship
+				create
+				list
+				details
+
+			stats
+            
+
+Routing :
+
+	Routing based on authentication status ( unauthenticated ) and user type is done in index.JS
+	Routing for individual user is done in routes/Usertype , where usertype is the type of user
+
+
+----------------------------------------------------------------------------------------
+
+
+import React from "react";
+import "./Profile.scss";
+import { Doughnut } from "react-chartjs-2";
+import firebase from "../../../firebase";
+import $ from "jquery";
+const db = firebase.firestore();
+
+const data1 = {
+  labels: ["On going", "Completed", "Applied"],
+  datasets: [
+    {
+      data: [300, 50, 100],
+      backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+      hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+    },
+  ],
+};
+const data2 = {
+  labels: ["Web Development", "Data Analysis", "Machine Learning"],
+  datasets: [
+    {
+      data: [300, 50, 100],
+      backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+      hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+    },
+  ],
+};
+
+class Profile extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      profile_data: {},
+    };
+  }
+
+  componentDidMount() {
+    // const db = app.firestore();
+    db.collection("students")
+      .doc(firebase.auth().currentUser.uid)
+      .get()
+      .then((doc) => {
+        this.setState({ profile_data: doc.data() }, () => {
+          // console.log(this.state.profile_data);
+        });
+      });
+  }
+
+  uploadResume = (e) => {
+    e.preventDefault();
+    const resume__file = $("#resume-input").prop("files")[0];
+    const ext = resume__file.name.substr(
+      resume__file.name.lastIndexOf(".") + 1,
+    );
+    if (ext === "pdf") {
+      // console.log("hji");
+      const u = firebase.auth().currentUser;
+      const user__resume = firebase
+        .storage()
+        .ref()
+        .child(`${u.uid}/__userData/__resume`);
+      user__resume.delete().finally(() =>
+        user__resume.put(resume__file).then((r) =>
+          r.ref
+            .getDownloadURL()
+            .then((url) =>
+              db.collection("students").doc(u.uid).update({
+                resumeURL: url,
+              }),
+            )
+            .catch((err) => {
+              //console.log(err);
+            }),
+        ),
+      );
+    } else {
+      alert("Please consider uploading in .pdf  format.");
+    }
+  };
+
+  uploadPic = (e) => {
+    e.preventDefault();
+    const image__file = $("#profile-input").prop("files")[0];
+    const ext = image__file.name.substr(image__file.name.lastIndexOf(".") + 1);
+    if (ext === "png" || ext === "jpg" || ext === "jpeg") {
+      // console.log("hji");
+      const u = firebase.auth().currentUser;
+      const user__image = firebase
+        .storage()
+        .ref()
+        .child(`${u.uid}/__userData/__image`);
+      user__image.delete().finally(() =>
+        user__image.put(image__file).then((r) =>
+          r.ref
+            .getDownloadURL()
+            .then((url) =>
+              db
+                .collection("students")
+                .doc(u.uid)
+                .update({
+                  picURL: url,
+                })
+                .then(() => {
+                  window.location.reload();
+                }),
+            )
+            .catch((err) => {
+              // console.log(err);
+            }),
+        ),
+      );
+    } else {
+      alert("Please consider uploading in .png , .jpg or .jpeg  format.");
+    }
+  };
+
+  // inputResume = () => {
+  //   document.getElementById("resume-input").click();
+  // };
+  render() {
+    return (
+      <div
+        className='container-fluid bg-light mx-auto p-4 min-vh-100'
+        id='profile'>
+        <div
+          className='container shadow-sm mx-auto bg-white p-3 row'
+          style={{ borderRadius: "0.9em" }}>
+          <div
+            className='col-md-2 rounded image-container '
+            onClick={() => {
+              document.getElementById("profile-input").click();
+            }}>
+            <img
+              className='rounded'
+              style={{ width: "20vh" }}
+              src={this.state.profile_data.picURL}
+              alt='default pic'
+            />
+            <div className='overlay rounded'>
+              {/* <i
+                id='icon'
+                className='fa fa-pencil-square-o'
+                aria-hidden='true'
+                style={{ fontSize: "1.4em" }}
+              /> */}
+            </div>
+            <div className='d-none'>
+              <input
+                type='file'
+                name='profile-input'
+                accept={[".png", ".jpg", ".jpeg"]}
+                onChange={this.uploadPic}
+                id='profile-input'
+              />
+            </div>
+          </div>
+          <div className='col-md-7  my-auto p-3'>
+            <p
+              className='lead'
+              style={{ fontSize: "1.6em", fontWeight: "450" }}>
+              {this.state.profile_data.name}
+            </p>
+            <p className='text-muted text-capitalize'>
+              {" "}
+              {this.state.profile_data.type}{" "}
+            </p>
+          </div>
+        </div>
+        {/* <div></div> */}
+        <div
+          className='container shadow-sm mx-auto p-4 bg-white  mt-4'
+          style={{ borderRadius: "0.9em" }}>
+          <div className='d-flex flex-md-row flex-column '>
+            <div className='col'>
+              <p className='subtitle text-muted'>Roll Number</p>
+              <p className='info'>{this.state.profile_data.roll_number}</p>
+            </div>
+
+            <div className='col'>
+              <p className='subtitle text-muted'> Year</p>
+              <p className='info'>{this.state.profile_data.year}</p>
+            </div>
+          </div>
+          <hr />
+          <div className='d-flex flex-md-row flex-column mt-3 text-break'>
+            <div className='col'>
+              <p className='subtitle text-muted'>Email</p>
+              <p className='info '>{this.state.profile_data.email}</p>
+            </div>
+            <div className='col'>
+              <p className='subtitle text-muted'>Credits Completed</p>
+              <p className='info'>{this.state.profile_data.credits}</p>
+            </div>
+          </div>
+          <hr />
+          <div className='d-flex flex-md-row flex-column mt-3'>
+            <div className='col'>
+              <p className='subtitle text-muted'>Department</p>
+              <p className='info'>{this.state.profile_data.branch}</p>
+            </div>
+          </div>
+
+          <div className='col-12 p-0 my-2'>
+            <form className=''>
+              <button
+                type='button'
+                className='btn btn-light text-primary  mx-auto'
+                onClick={() => {
+                  $("#resume-input").click();
+                }}>
+                <i className='fa fa-chevron-circle-up mr-2' />
+                Upload Resume
+              </button>
+              <div className='resume-section '>
+                <input
+                  name='resume-input'
+                  id='resume-input'
+                  accept={[".pdf"]}
+                  type='file'
+                  onChange={this.uploadResume}
+                />
+              </div>
+            </form>
+          </div>
+          <hr />
+          <p className='text-muted text-center'>Statistics</p>
+          <div className='d-flex flex-md-row flex-column mt-1'>
+            <div className='col-md-6 p-0'>
+              <Doughnut data={data1} />
+            </div>
+            <div className='col-md-6 p-0'>
+              <Doughnut data={data2} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+export default Profile;
+
